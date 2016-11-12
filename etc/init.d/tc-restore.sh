@@ -6,6 +6,9 @@
 . /etc/init.d/tc-functions
 useBusybox
 
+# wait up to 5 minutes for disks to settle
+/sbin/udevadm settle --timeout=300
+
 TCE="$1"
 DEVICE=""
 MYDATA=mydata
@@ -24,6 +27,7 @@ for i in `cat /proc/cmdline`; do
 			case $i in
 				restore) RESTORE=1 ;;
 				protect) PROTECT=1 ;;
+				symlinksrestore) SYMLINKSRESTORE=1 ;;
 			esac
 		;;
 	esac
@@ -38,7 +42,11 @@ if [ -n "$PROTECT" ]; then
 		DEVICE=`autoscan "$MYDATA".tgz.bfe 'f'`
 	fi
 	if [ -n "$DEVICE" ]; then
-		/usr/bin/filetool.sh -r "$DEVICE"
+		if [ -n "$SYMLINKSRESTORE" ]; then
+			/usr/bin/symlinktool.sh -r "$DEVICE"
+		else
+			/usr/bin/filetool.sh -r "$DEVICE"
+		fi
 		exit 0
 	fi
 fi
@@ -57,7 +65,11 @@ if [ -z "$DEVICE" ]; then
 fi
 
 if [ -n "$DEVICE" ]; then
-	/usr/bin/filetool.sh -r "$DEVICE"
+	if [ -n "$SYMLINKSRESTORE" ]; then
+		/usr/bin/symlinktool.sh -r "$DEVICE"
+	else
+		/usr/bin/filetool.sh -r "$DEVICE"
+	fi
 	exit 0
 fi
 

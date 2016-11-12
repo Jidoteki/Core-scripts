@@ -13,6 +13,7 @@ TCEINSTALLED="/usr/local/tce.installed"
 INSTALLED=""
 VERSION="$(cat /usr/share/doc/tc/release.txt)"
 KERNEL="$(uname -r)"
+APPLIANCE_VERSION="$([ -f /opt/jidoteki/tinyadmin/etc/version.txt ] && cat /opt/jidoteki/tinyadmin/etc/version.txt)"
 
 addUser(){
 	echo "${GREEN}Adding user ${YELLOW}$USER ${NORMAL}"
@@ -25,8 +26,9 @@ addUser(){
 
 # Main
 
-echo "${GREEN}Booting ${YELLOW}Core $VERSION ${NORMAL}"
-echo "${GREEN}Running Linux Kernel ${YELLOW}$KERNEL${GREEN}.${NORMAL}"
+echo "${GREEN}Booting ${YELLOW}Core $VERSION${NORMAL}"
+echo "${GREEN}Running Linux Kernel ${YELLOW}$KERNEL${GREEN}${NORMAL}"
+echo "${GREEN}Appliance version ${YELLOW}${APPLIANCE_VERSION:-unknown}${GREEN}${NORMAL}"
 export PATH=/usr/local/sbin:/usr/local/bin:"$PATH"
 
 # Here we check all the boot parameters using the fastest way known to men, case & loop
