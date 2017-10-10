@@ -2,8 +2,9 @@
 . /etc/init.d/tc-functions
 useBusybox
 TARGET=`cat /etc/sysconfig/backup_device`
+DEVICE="$(sed 's/\///' /etc/sysconfig/backup_device)"
 [ -n "$TARGET" ] || exit 1
 echo "Backup device is set to: "$TARGET""
 echo -n "Perform backup now? (y/N)"
 read ANS
-[ "$ANS" == "y" ] && filetool.sh -b
+[ "$ANS" == "y" ] && { sudo /usr/bin/symlinktool.sh -c "$DEVICE"; sudo /usr/bin/symlinktool.sh -r "$DEVICE"; }
