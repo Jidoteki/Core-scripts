@@ -9,6 +9,23 @@ useBusybox
 # wait up to 5 minutes for disks to settle
 /sbin/udevadm settle --timeout=300
 
+# generate symlinks for Amazon/Xen: sdb -> xvdb
+all_disks="a b c d e f g h i j k l m n o p"
+for i in $all_disks; do
+	if [ -b "/dev/xvd${i}" ]; then
+		ln -svf /dev/xvd${i} /dev/sd${i} >>/tmp/symlinktool_xvd.msg 2>&1 || true
+		ln -svf /dev/xvd${i}1 /dev/sd${i}1 >>/tmp/symlinktool_xvd.msg 2>&1 || true
+	fi
+done
+
+# backward compat for Amazon systems where xvda1 doesn't exist
+if dmesg | grep -qw amazon; then
+  if ! dmesg | grep -qw xvda1; then
+    rm /dev/sda1 && \
+    ln -svf /dev/xvda /dev/sda1 >>/tmp/symlinktool_xvd.msg 2>&1 || true
+  fi
+fi
+
 TCE="$1"
 DEVICE=""
 MYDATA=mydata
@@ -27,7 +44,7 @@ for i in `cat /proc/cmdline`; do
 			case $i in
 				restore) RESTORE=1 ;;
 				protect) PROTECT=1 ;;
-				symlinksrestore) SYMLINKSRESTORE=1 ;;
+				symlinksnorestore) SYMLINKSNORESTORE=1 ;;
 			esac
 		;;
 	esac
@@ -42,10 +59,10 @@ if [ -n "$PROTECT" ]; then
 		DEVICE=`autoscan "$MYDATA".tgz.bfe 'f'`
 	fi
 	if [ -n "$DEVICE" ]; then
-		if [ -n "$SYMLINKSRESTORE" ]; then
-			/usr/bin/symlinktool.sh -r "$DEVICE"
-		else
+		if [ -n "$SYMLINKSNORESTORE" ]; then
 			/usr/bin/filetool.sh -r "$DEVICE"
+		else
+			/usr/bin/symlinktool.sh -r "$DEVICE"
 		fi
 		exit 0
 	fi
@@ -65,10 +82,10 @@ if [ -z "$DEVICE" ]; then
 fi
 
 if [ -n "$DEVICE" ]; then
-	if [ -n "$SYMLINKSRESTORE" ]; then
-		/usr/bin/symlinktool.sh -r "$DEVICE"
-	else
+	if [ -n "$SYMLINKSNORESTORE" ]; then
 		/usr/bin/filetool.sh -r "$DEVICE"
+	else
+		/usr/bin/symlinktool.sh -r "$DEVICE"
 	fi
 	exit 0
 fi

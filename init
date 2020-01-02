@@ -15,6 +15,17 @@ echo "$restore" > /etc/sysconfig/backup_device
 mv /usr/bin/filetool.sh /usr/bin/filetool_orig.sh
 mv /usr/bin/filetool_wrapper.sh /usr/bin/filetool.sh
 
+# Rename passwd wrapper
+mv /usr/bin/passwd /usr/bin/passwd.orig
+mv /usr/bin/passwd_wrapper.sh /usr/bin/passwd
+
+# Increase ulimit globally
+ulimit -Hn 10000
+ulimit -Sn 10000
+
+# Quiet the console kernel messages
+sysctl -q -w kernel.printk="2 4 1 7"
+
 grep -qw multivt /proc/cmdline && sed -i s/^#tty/tty/ /etc/inittab
 if ! grep -qw noembed /proc/cmdline; then
 
